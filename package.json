@@ -1,0 +1,36 @@
+{
+  "name": "backend-turnos-reservas-views-socketio",
+  "version": "1.0.0",
+  "description": "Sistema de Turnos y Reservas con vistas Handlebars, comunicación en tiempo real con Socket.io, API REST, MongoDB Atlas, Mongoose y arquitectura en capas",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "handlebars",
+    "socketio",
+    "websocket",
+    "real-time",
+    "mongodb",
+    "mongoose",
+    "layers-architecture",
+    "dao",
+    "repository",
+    "services",
+    "bookings",
+    "esm"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-handlebars": "^9.0.4",
+    "mongoose": "^8.9.5",
+    "socket.io": "^4.8.4"
+  }
+}

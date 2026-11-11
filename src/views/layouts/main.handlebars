@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <a href="/views/services" class="logo">
+          <span class="logo-icon">📅</span>
+          <span class="logo-text">Sistema de Turnos & Reservas</span>
+        </a>
+      </div>
+      <nav class="nav-links">
+        <a href="/views/services" class="nav-link">Servicios</a>
+        <a href="/views/availability" class="nav-link">Disponibilidad</a>
+        <a href="/views/bookings" class="nav-link">Reservas</a>
+        <a href="/api/services" target="_blank" class="nav-link api-link">API REST (JSON)</a>
+      </nav>
+      <div class="socket-status" id="socketStatus">
+        <span class="status-dot disconnected" id="statusDot"></span>
+        <span class="status-label" id="statusLabel">Conectando...</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    {{{body}}}
+  </main>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <p>&copy; 2026 Sistema Backend de Turnos y Reservas — Express + Handlebars + Socket.io + MongoDB Atlas</p>
+    </div>
+  </footer>
+
+  <!-- Notificaciones en Tiempo Real -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Socket.io y Scripts del Cliente -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/socket.js"></script>
+</body>
+</html>
+

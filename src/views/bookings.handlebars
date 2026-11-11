@@ -1,0 +1,102 @@
+<div class="view-header">
+  <div>
+    <h1 class="view-title">Gestión de Reservas y Turnos</h1>
+    <p class="view-subtitle">Monitoreo y administración de reservas en tiempo real conectadas a MongoDB Atlas.</p>
+  </div>
+  <div class="header-actions">
+    <span class="badge badge-info" id="bookingsTotalBadge">Total reservas: {{bookings.length}}</span>
+  </div>
+</div>
+
+{{#if errorMessage}}
+  <div class="alert alert-error">
+    {{errorMessage}}
+  </div>
+{{/if}}
+
+<div class="dashboard-grid">
+  <!-- Sección Formulario de Reserva -->
+  <section class="card form-card">
+    <div class="card-header">
+      <h2 class="card-title">📝 Registrar Nueva Reserva</h2>
+      <p class="card-description">Crea una reserva en vivo y notifica a todos los clientes conectados mediante WebSockets.</p>
+    </div>
+
+    <form id="createBookingDirectForm" class="booking-form">
+      <div class="form-group">
+        <label for="directClientName">Nombre Completo *</label>
+        <input type="text" id="directClientName" name="clientName" required placeholder="Ej: Santiago Gómez" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="directClientEmail">Correo Electrónico *</label>
+        <input type="email" id="directClientEmail" name="clientEmail" required placeholder="santiago@example.com" class="form-control">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col">
+          <label for="directBookingDate">Fecha *</label>
+          <input type="date" id="directBookingDate" name="date" required class="form-control">
+        </div>
+        <div class="form-group col">
+          <label for="directBookingTime">Hora *</label>
+          <input type="time" id="directBookingTime" name="time" required class="form-control">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="btnSubmitDirectBooking">
+        <span class="btn-icon">⚡</span> Guardar Reserva (Socket.io)
+      </button>
+    </form>
+  </section>
+
+  <!-- Sección Listado de Reservas -->
+  <section class="card list-card">
+    <div class="card-header card-header-split">
+      <div>
+        <h2 class="card-title">Reservas Registradas</h2>
+        <p class="card-description">Listado en tiempo real desde la colección <code>bookings</code>.</p>
+      </div>
+      <div class="live-indicator">
+        <span class="pulse-indicator"></span> Socket.io conectado
+      </div>
+    </div>
+
+    <div id="bookingsListContainer">
+      {{#if hasBookings}}
+        <div class="bookings-grid" id="bookingsGridView">
+          {{#each bookings}}
+            <article class="booking-card" id="booking-item-{{this._id}}">
+              <div class="booking-card-header">
+                <span class="booking-client">👤 {{this.clientName}}</span>
+                <span class="status-badge badge-{{this.status}}">{{this.status}}</span>
+              </div>
+              <div class="booking-meta">
+                <p><strong>📧 Email:</strong> {{this.clientEmail}}</p>
+                <p><strong>📅 Fecha:</strong> {{this.date}} &nbsp;|&nbsp; <strong>⏰ Hora:</strong> {{this.time}} hs</p>
+              </div>
+              {{#if this.services.length}}
+                <div class="booking-services">
+                  <strong>Servicios asociados:</strong>
+                  <ul>
+                    {{#each this.services}}
+                      <li>{{#if this.service.name}}{{this.service.name}}{{else}}Servicio ID: {{this.service}}{{/if}} (x{{this.quantity}})</li>
+                    {{/each}}
+                  </ul>
+                </div>
+              {{/if}}
+            </article>
+          {{/each}}
+        </div>
+      {{else}}
+        <div class="empty-state" id="emptyDirectBookingsMessage">
+          <span class="empty-icon">📅</span>
+          <h3>No hay reservas cargadas todavía</h3>
+          <p>Utilizá el formulario para registrar un nuevo turno en tiempo real.</p>
+        </div>
+        <div class="bookings-grid" id="bookingsGridView" style="display: none;"></div>
+      {{/if}}
+    </div>
+  </section>
+</div>
+

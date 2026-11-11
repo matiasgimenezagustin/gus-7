@@ -1,0 +1,157 @@
+<div class="view-header">
+  <div>
+    <h1 class="view-title">Disponibilidad de Turnos y Reservas</h1>
+    <p class="view-subtitle">Panel interactivo en tiempo real para consultar servicios activos y agendar nuevas reservas.</p>
+  </div>
+  <div class="header-actions">
+    <span class="badge badge-success" id="availableCounter">Servicios activos: {{availableServices.length}}</span>
+    <span class="badge badge-info" id="bookingsCounter">Reservas registradas: {{bookings.length}}</span>
+  </div>
+</div>
+
+{{#if errorMessage}}
+  <div class="alert alert-error">
+    {{errorMessage}}
+  </div>
+{{/if}}
+
+<div class="dashboard-grid">
+  <!-- Sección: Agendar Turno en Tiempo Real -->
+  <section class="card form-card">
+    <div class="card-header">
+      <h2 class="card-title">📅 Agendar Turno / Reserva</h2>
+      <p class="card-description">Las nuevas reservas se guardan en MongoDB Atlas y se propagan instantáneamente por Socket.io.</p>
+    </div>
+
+    <form id="createBookingForm" class="booking-form">
+      <div class="form-group">
+        <label for="bookingClientName">Nombre Completo del Cliente *</label>
+        <input type="text" id="bookingClientName" name="clientName" required placeholder="Ej: Carolina Fernández" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="bookingClientEmail">Correo Electrónico *</label>
+        <input type="email" id="bookingClientEmail" name="clientEmail" required placeholder="carolina@example.com" class="form-control">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col">
+          <label for="bookingDate">Fecha del Turno *</label>
+          <input type="date" id="bookingDate" name="date" required class="form-control">
+        </div>
+        <div class="form-group col">
+          <label for="bookingTime">Hora *</label>
+          <input type="time" id="bookingTime" name="time" required class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="bookingService">Servicio Solicitado (Opcional)</label>
+        <select id="bookingService" name="serviceId" class="form-control">
+          <option value="">-- Seleccionar servicio --</option>
+          {{#each availableServices}}
+            <option value="{{this._id}}">{{this.name}} (${{this.price}} - {{this.duration}} min)</option>
+          {{/each}}
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-success" id="btnSubmitBooking">
+        <span class="btn-icon">✨</span> Confirmar Reserva (Socket.io)
+      </button>
+    </form>
+  </section>
+
+  <!-- Sección: Grilla de Servicios Disponibles para Turnos -->
+  <section class="card list-card">
+    <div class="card-header card-header-split">
+      <div>
+        <h2 class="card-title">Servicios con Disponibilidad Activa</h2>
+        <p class="card-description">Servicios habilitados actualmente para agendar turnos.</p>
+      </div>
+      <div class="live-indicator">
+        <span class="pulse-indicator"></span> Sincronizado en vivo
+      </div>
+    </div>
+
+    <div id="availableServicesContainer">
+      {{#if hasAvailableServices}}
+        <div class="table-responsive">
+          <table class="data-table" id="availableServicesTable">
+            <thead>
+              <tr>
+                <th>Servicio</th>
+                <th>Categoría</th>
+                <th>Duración</th>
+                <th>Precio</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each availableServices}}
+                <tr id="avail-row-{{this._id}}">
+                  <td><strong>{{this.name}}</strong><br><small class="text-muted">{{this.description}}</small></td>
+                  <td><span class="service-category">{{this.category}}</span></td>
+                  <td>{{this.duration}} min</td>
+                  <td class="price-tag">${{this.price}}</td>
+                  <td><span class="status-badge badge-success">Disponible</span></td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      {{else}}
+        <div class="empty-state" id="emptyAvailableMessage">
+          <span class="empty-icon">⚠️</span>
+          <h3>No hay servicios activos disponibles en este momento</h3>
+          <p>Podés habilitar servicios desde la vista de Servicios o crear uno nuevo.</p>
+        </div>
+      {{/if}}
+    </div>
+
+    <!-- Sub-sección: Próximas Reservas Confirmadas -->
+    <div class="sub-section">
+      <div class="card-header card-header-split">
+        <div>
+          <h3 class="card-title" style="font-size: 1.1rem;">Turnos Agendados en Base de Datos</h3>
+          <p class="card-description">Últimas reservas registradas en la colección <code>bookings</code>.</p>
+        </div>
+      </div>
+
+      <div id="bookingsContainer">
+        {{#if hasBookings}}
+          <div class="bookings-grid" id="bookingsList">
+            {{#each bookings}}
+              <div class="booking-card" id="booking-{{this._id}}">
+                <div class="booking-card-header">
+                  <span class="booking-client">👤 {{this.clientName}}</span>
+                  <span class="status-badge badge-info">{{this.status}}</span>
+                </div>
+                <div class="booking-meta">
+                  <p><strong>📧 Email:</strong> {{this.clientEmail}}</p>
+                  <p><strong>📆 Fecha:</strong> {{this.date}} &nbsp;|&nbsp; <strong>⏰ Hora:</strong> {{this.time}} hs</p>
+                </div>
+                {{#if this.services.length}}
+                  <div class="booking-services">
+                    <strong>Servicios incluidos:</strong>
+                    <ul>
+                      {{#each this.services}}
+                        <li>{{#if this.service.name}}{{this.service.name}}{{else}}Servicio ID: {{this.service}}{{/if}} (x{{this.quantity}})</li>
+                      {{/each}}
+                    </ul>
+                  </div>
+                {{/if}}
+              </div>
+            {{/each}}
+          </div>
+        {{else}}
+          <div class="empty-state" id="emptyBookingsMessage">
+            <span class="empty-icon">📋</span>
+            <p>Aún no hay reservas registradas en el sistema.</p>
+          </div>
+          <div class="bookings-grid" id="bookingsList" style="display: none;"></div>
+        {{/if}}
+      </div>
+    </div>
+  </section>
+</div>
+

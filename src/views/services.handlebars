@@ -1,0 +1,126 @@
+<div class="view-header">
+  <div>
+    <h1 class="view-title">Catálogo de Servicios</h1>
+    <p class="view-subtitle">Gestión centralizada de servicios sincronizada en tiempo real mediante Socket.io y persistida en MongoDB Atlas.</p>
+  </div>
+  <div class="header-actions">
+    <span class="badge badge-info" id="servicesCounter">Total servicios: {{services.length}}</span>
+  </div>
+</div>
+
+{{#if errorMessage}}
+  <div class="alert alert-error">
+    {{errorMessage}}
+  </div>
+{{/if}}
+
+<div class="dashboard-grid">
+  <!-- Sección: Formulario para Crear Servicio en Tiempo Real -->
+  <section class="card form-card">
+    <div class="card-header">
+      <h2 class="card-title">➕ Agregar Servicio en Tiempo Real</h2>
+      <p class="card-description">Los servicios creados aquí se emitirán instantáneamente a todos los navegadores conectados.</p>
+    </div>
+
+    <form id="createServiceForm" class="service-form">
+      <div class="form-group">
+        <label for="serviceName">Nombre del Servicio *</label>
+        <input type="text" id="serviceName" name="name" required placeholder="Ej: Corte de Cabello Clásico" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="serviceDescription">Descripción *</label>
+        <textarea id="serviceDescription" name="description" required rows="2" placeholder="Detalle del servicio ofrecido..." class="form-control"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col">
+          <label for="serviceCategory">Categoría *</label>
+          <input type="text" id="serviceCategory" name="category" required placeholder="Ej: Barbería, Estética" class="form-control">
+        </div>
+        <div class="form-group col">
+          <label for="serviceDuration">Duración (minutos) *</label>
+          <input type="number" id="serviceDuration" name="duration" required min="1" placeholder="Ej: 45" class="form-control">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col">
+          <label for="servicePrice">Precio ($ ARS) *</label>
+          <input type="number" id="servicePrice" name="price" required min="0" step="0.01" placeholder="Ej: 8500" class="form-control">
+        </div>
+        <div class="form-group col checkbox-group">
+          <label class="checkbox-label" for="serviceAvailable">
+            <input type="checkbox" id="serviceAvailable" name="available" checked>
+            <span>Disponible para reservas</span>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="btnSubmitService">
+        <span class="btn-icon">⚡</span> Crear Servicio (Socket.io)
+      </button>
+    </form>
+  </section>
+
+  <!-- Sección: Listado de Servicios desde MongoDB -->
+  <section class="card list-card">
+    <div class="card-header card-header-split">
+      <div>
+        <h2 class="card-title">Servicios Registrados</h2>
+        <p class="card-description">Datos en vivo consultados desde la colección <code>services</code> de MongoDB Atlas.</p>
+      </div>
+      <div class="live-indicator">
+        <span class="pulse-indicator"></span> Sincronizado en vivo
+      </div>
+    </div>
+
+    <div id="servicesContainer">
+      {{#if hasServices}}
+        <div class="services-grid" id="servicesList">
+          {{#each services}}
+            <article class="service-card {{#if this.available}}available{{else}}unavailable{{/if}}" id="service-{{this._id}}" data-id="{{this._id}}">
+              <div class="service-card-header">
+                <span class="service-category">{{this.category}}</span>
+                <span class="status-badge {{#if this.available}}badge-success{{else}}badge-secondary{{/if}}" id="badge-{{this._id}}">
+                  {{#if this.available}}Disponible{{else}}No disponible{{/if}}
+                </span>
+              </div>
+
+              <h3 class="service-name">{{this.name}}</h3>
+              <p class="service-description">{{this.description}}</p>
+
+              <div class="service-meta">
+                <div class="meta-item">
+                  <span class="meta-label">⏱️ Duración:</span>
+                  <span class="meta-value">{{this.duration}} min</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">💵 Precio:</span>
+                  <span class="meta-value price-tag">${{this.price}}</span>
+                </div>
+              </div>
+
+              <div class="service-actions">
+                <button type="button" class="btn btn-sm btn-outline toggle-btn" data-action="toggle-availability" data-id="{{this._id}}">
+                  🔄 Alternar Estado
+                </button>
+                <button type="button" class="btn btn-sm btn-danger-outline delete-btn" data-action="delete-service" data-id="{{this._id}}">
+                  🗑️ Eliminar
+                </button>
+              </div>
+            </article>
+          {{/each}}
+        </div>
+      {{else}}
+        <div class="empty-state" id="emptyServicesMessage">
+          <span class="empty-icon">📂</span>
+          <h3>No hay servicios registrados en la base de datos</h3>
+          <p>Utilizá el formulario lateral o la API REST para agregar el primer servicio.</p>
+        </div>
+        <div class="services-grid" id="servicesList" style="display: none;"></div>
+      {{/if}}
+    </div>
+  </section>
+</div>
+
